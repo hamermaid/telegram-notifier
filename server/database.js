@@ -49,9 +49,10 @@ export async function initDatabase() {
                                                        id INTEGER PRIMARY KEY AUTOINCREMENT,
                                                        title TEXT NOT NULL,
                                                        message TEXT,
-                                                       schedule_type TEXT NOT NULL, -- daily, weekly, custom
-                                                       schedule_time TEXT NOT NULL, -- HH:MM 형식
-                                                       schedule_days TEXT,          -- 주간 반복시 요일 (1,2,3,4,5)
+                                                       schedule_type TEXT NOT NULL,
+                                                       schedule_time TEXT NOT NULL,
+                                                       schedule_days TEXT,
+                                                       schedule_date TEXT,         
                                                        is_active BOOLEAN DEFAULT 1,
                                                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                                                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -71,20 +72,20 @@ export async function initDatabase() {
 
       // 기본 날씨 설정 행 삽입 (없을 때만)
       db.run(`
-        INSERT OR IGNORE INTO weather_settings (id, api_key, city) 
-        VALUES (1, NULL, 'Seoul')
+          INSERT OR IGNORE INTO weather_settings (id, api_key, city) 
+  VALUES (1, NULL, 'Seoul')
       `);
 
       // 알림 전송 로그 테이블
       db.run(`
-        CREATE TABLE IF NOT EXISTS notification_logs (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          notification_id INTEGER,
-          sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          message TEXT,
-          status TEXT DEFAULT 'success', -- success, failed
-          FOREIGN KEY (notification_id) REFERENCES notifications (id)
-        )
+          CREATE TABLE IF NOT EXISTS notification_logs (
+                                                           id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                           notification_id INTEGER,
+                                                           sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                                                           message TEXT,
+                                                           status TEXT DEFAULT 'success', -- success, failed
+                                                           FOREIGN KEY (notification_id) REFERENCES notifications (id)
+              )
       `, (err) => {
         if (err) {
           console.error('❌ 테이블 생성 실패:', err);

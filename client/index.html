@@ -114,7 +114,7 @@
             <div class="col-md-6 mb-3">
               <label for="notification-title" class="form-label">알림 제목 *</label>
               <input type="text" class="form-control" id="notification-title"
-                     placeholder="예: 운동 시간, 물 마시기" required>
+                     placeholder="예: 운동 시간, 생일 축하, 프로젝트 마감" required>
             </div>
 
             <div class="col-md-6 mb-3">
@@ -126,7 +126,7 @@
           <div class="mb-3">
             <label for="notification-message" class="form-label">메시지 (선택)</label>
             <textarea class="form-control" id="notification-message" rows="2"
-                      placeholder="예: 스트레칭하고 물 한 잔 마셔요!"></textarea>
+                      placeholder="예: 스트레칭하고 물 한 잔 마셔요! 생일을 축하합니다! 🎂"></textarea>
           </div>
 
           <div class="row mb-3">
@@ -137,6 +137,8 @@
                 <option value="daily">매일</option>
                 <option value="weekly">주간 선택</option>
                 <option value="weather">날씨 기반</option>
+                <option value="date_once">특정 날짜 (1회)</option>
+                <option value="date_yearly">매년 반복 (기념일)</option>
               </select>
             </div>
 
@@ -176,6 +178,14 @@
               </select>
               <div class="form-text">
                 설정한 날씨 조건이 만족될 때 알림을 보냅니다.
+              </div>
+            </div>
+
+            <div class="col-md-6" id="date-picker-container" style="display: none;">
+              <label for="schedule-date" class="form-label">날짜 선택</label>
+              <input type="date" class="form-control" id="schedule-date">
+              <div class="form-text" id="date-help-text">
+                특정 날짜를 선택하세요.
               </div>
             </div>
           </div>

@@ -3,7 +3,7 @@ console.log('🤖 텔레알림 클라이언트가 시작되었습니다!');
 
 // DOM 요소들
 let telegramForm, statusAlert, testBtn, botTokenInput, chatIdInput, telegramStatus;
-let notificationForm, notificationsList, scheduleTypeSelect, weeklyDaysContainer, weatherConditionContainer;
+let notificationForm, notificationsList, scheduleTypeSelect, weeklyDaysContainer, weatherConditionContainer, datePickerContainer;
 let toggleTelegramBtn, telegramCardBody;
 let weatherForm, weatherTestBtn, weatherApiKeyInput, weatherCityInput, weatherStatus;
 let toggleWeatherBtn, weatherCardBody, currentWeatherDiv, weatherInfoDiv;
@@ -57,18 +57,11 @@ function initializeElements() {
   scheduleTypeSelect = document.getElementById('schedule-type');
   weeklyDaysContainer = document.getElementById('weekly-days-container');
   weatherConditionContainer = document.getElementById('weather-condition-container');
-
-  // 디버깅: 날씨 요소 확인
-  console.log('날씨 요소 체크:');
-  console.log('toggleWeatherBtn:', toggleWeatherBtn);
-  console.log('weatherCardBody:', weatherCardBody);
-  console.log('weatherForm:', weatherForm);
+  datePickerContainer = document.getElementById('date-picker-container');
 }
 
 // 이벤트 리스너 설정
 function setupEventListeners() {
-  console.log('이벤트 리스너 등록 중...');
-
   // 텔레그램 설정
   if (telegramForm) telegramForm.addEventListener('submit', handleTelegramSubmit);
   if (testBtn) testBtn.addEventListener('click', handleTestMessage);
@@ -77,12 +70,7 @@ function setupEventListeners() {
   // 날씨 설정
   if (weatherForm) weatherForm.addEventListener('submit', handleWeatherSubmit);
   if (weatherTestBtn) weatherTestBtn.addEventListener('click', handleWeatherTest);
-  if (toggleWeatherBtn) {
-    toggleWeatherBtn.addEventListener('click', toggleWeatherCard);
-    console.log('날씨 토글 버튼 이벤트 리스너 등록됨');
-  } else {
-    console.error('❌ toggleWeatherBtn을 찾을 수 없습니다!');
-  }
+  if (toggleWeatherBtn) toggleWeatherBtn.addEventListener('click', toggleWeatherCard);
 
   // 알림 관리
   if (notificationForm) notificationForm.addEventListener('submit', handleNotificationSubmit);
@@ -92,33 +80,21 @@ function setupEventListeners() {
   if (refreshBtn) refreshBtn.addEventListener('click', loadNotifications);
 }
 
-// 텔레그램 카드 토글
+// 카드 토글 함수들
 function toggleTelegramCard() {
   const isVisible = telegramCardBody.style.display !== 'none';
   telegramCardBody.style.display = isVisible ? 'none' : 'block';
-
   const icon = toggleTelegramBtn.querySelector('i');
   icon.className = isVisible ? 'bi bi-chevron-down' : 'bi bi-chevron-up';
 }
 
-// 날씨 카드 토글
 function toggleWeatherCard() {
-  console.log('날씨 카드 토글 클릭됨!');
-
-  if (!weatherCardBody) {
-    console.error('❌ weatherCardBody 요소가 없습니다!');
-    return;
-  }
-
   const isVisible = weatherCardBody.style.display !== 'none';
   weatherCardBody.style.display = isVisible ? 'none' : 'block';
-
   const icon = toggleWeatherBtn?.querySelector('i');
   if (icon) {
     icon.className = isVisible ? 'bi bi-chevron-down' : 'bi bi-chevron-up';
   }
-
-  console.log('날씨 카드 표시 상태:', weatherCardBody.style.display);
 }
 
 // 서버 연결 테스트
@@ -129,11 +105,11 @@ async function testServerConnection() {
     console.log('✅ 서버 연결 성공:', data);
   } catch (error) {
     console.log('❌ 서버 연결 실패:', error);
-    showAlert('danger', '❌ 서버 연결에 실패했습니다. 서버가 실행 중인지 확인해주세요.');
+    showAlert('danger', '❌ 서버 연결에 실패했습니다.');
   }
 }
 
-// 텔레그램 설정 불러오기
+// 설정 불러오기 함수들
 async function loadTelegramSettings() {
   try {
     const response = await fetch('/api/telegram/settings');
@@ -151,24 +127,20 @@ async function loadTelegramSettings() {
     } else {
       telegramStatus.innerHTML = `
                 <div class="alert alert-warning">
-                    <strong>⚠️ 텔레그램 봇이 설정되지 않았습니다.</strong><br>
-                    아래 양식을 채워서 봇을 연결해주세요.
+                    <strong>⚠️ 텔레그램 봇이 설정되지 않았습니다.</strong>
                 </div>
             `;
-      telegramCardBody.style.display = 'block'; // 설정이 없으면 자동으로 열기
+      telegramCardBody.style.display = 'block';
     }
 
     if (data.chat_id) {
       chatIdInput.value = data.chat_id;
     }
-
   } catch (error) {
     console.error('설정 불러오기 실패:', error);
-    showAlert('danger', '❌ 텔레그램 설정을 불러올 수 없습니다.');
   }
 }
 
-// 날씨 설정 불러오기
 async function loadWeatherSettings() {
   try {
     const response = await fetch('/api/weather/settings');
@@ -183,31 +155,25 @@ async function loadWeatherSettings() {
                 </div>
             `;
       weatherTestBtn.disabled = false;
-
-      // 현재 날씨 자동 로드
       await loadCurrentWeather();
     } else {
       weatherStatus.innerHTML = `
                 <div class="alert alert-warning">
-                    <strong>⚠️ 날씨 API가 설정되지 않았습니다.</strong><br>
-                    아래 양식을 채워서 날씨 연동을 활성화하세요.
+                    <strong>⚠️ 날씨 API가 설정되지 않았습니다.</strong>
                 </div>
             `;
-      weatherCardBody.style.display = 'block'; // 설정이 없으면 자동으로 열기
+      weatherCardBody.style.display = 'block';
     }
 
-    // 기존 값 표시
     if (data.city) {
       weatherCityInput.value = data.city;
     }
-
   } catch (error) {
     console.error('날씨 설정 불러오기 실패:', error);
-    showAlert('danger', '❌ 날씨 설정을 불러올 수 없습니다.');
   }
 }
 
-// 텔레그램 설정 저장
+// 설정 저장 함수들
 async function handleTelegramSubmit(event) {
   event.preventDefault();
 
@@ -243,7 +209,6 @@ async function handleTelegramSubmit(event) {
   }
 }
 
-// 날씨 설정 저장
 async function handleWeatherSubmit(event) {
   event.preventDefault();
 
@@ -271,15 +236,14 @@ async function handleWeatherSubmit(event) {
       weatherTestBtn.disabled = false;
       await loadWeatherSettings();
     } else {
-      showAlert('danger', '❌ 설정 저장에 실패했습니다: ' + data.error);
+      showAlert('danger', '❌ 설정 저장에 실패했습니다.');
     }
   } catch (error) {
-    console.error('날씨 설정 저장 실패:', error);
     showAlert('danger', '❌ 서버 오류로 설정을 저장할 수 없습니다.');
   }
 }
 
-// 테스트 메시지 전송
+// 테스트 함수들
 async function handleTestMessage() {
   try {
     testBtn.disabled = true;
@@ -294,7 +258,6 @@ async function handleTestMessage() {
       showAlert('danger', '❌ ' + data.message);
     }
   } catch (error) {
-    console.error('테스트 메시지 전송 실패:', error);
     showAlert('danger', '❌ 테스트 메시지 전송에 실패했습니다.');
   } finally {
     testBtn.disabled = false;
@@ -302,7 +265,6 @@ async function handleTestMessage() {
   }
 }
 
-// 날씨 테스트
 async function handleWeatherTest() {
   try {
     weatherTestBtn.disabled = true;
@@ -315,10 +277,9 @@ async function handleWeatherTest() {
       showAlert('success', '✅ ' + data.message);
       displayWeatherInfo(data.current_weather, data.rain_forecast);
     } else {
-      showAlert('danger', '❌ ' + data.message + (data.error ? ': ' + data.error : ''));
+      showAlert('danger', '❌ ' + data.message);
     }
   } catch (error) {
-    console.error('날씨 테스트 실패:', error);
     showAlert('danger', '❌ 날씨 API 테스트에 실패했습니다.');
   } finally {
     weatherTestBtn.disabled = false;
@@ -326,7 +287,6 @@ async function handleWeatherTest() {
   }
 }
 
-// 현재 날씨 불러오기
 async function loadCurrentWeather() {
   try {
     const response = await fetch('/api/weather/current');
@@ -338,11 +298,9 @@ async function loadCurrentWeather() {
     displayWeatherInfo(weather, rainForecast);
   } catch (error) {
     console.error('현재 날씨 불러오기 실패:', error);
-    // 에러는 조용히 처리 (설정이 안되어 있을 수 있음)
   }
 }
 
-// 날씨 정보 표시
 function displayWeatherInfo(weather, rainForecast) {
   const umbrellaIcon = rainForecast.should_bring_umbrella ? '☔' : '☀️';
   const umbrellaText = rainForecast.should_bring_umbrella ? '우산을 챙기세요!' : '맑은 하루예요!';
@@ -382,19 +340,32 @@ function displayWeatherInfo(weather, rainForecast) {
 function handleScheduleTypeChange() {
   const scheduleType = scheduleTypeSelect.value;
 
-  // 모든 조건부 컨테이너 숨기기
   weeklyDaysContainer.style.display = 'none';
   weatherConditionContainer.style.display = 'none';
+  datePickerContainer.style.display = 'none';
 
-  // 선택된 타입에 따라 표시
   if (scheduleType === 'weekly') {
     weeklyDaysContainer.style.display = 'block';
   } else if (scheduleType === 'weather') {
     weatherConditionContainer.style.display = 'block';
+  } else if (scheduleType === 'date_once' || scheduleType === 'date_yearly') {
+    datePickerContainer.style.display = 'block';
+
+    const dateHelpText = document.getElementById('date-help-text');
+    const scheduleDateInput = document.getElementById('schedule-date');
+
+    if (scheduleType === 'date_once') {
+      dateHelpText.textContent = '한 번만 알림을 받을 날짜를 선택하세요.';
+      const today = new Date().toISOString().split('T')[0];
+      scheduleDateInput.min = today;
+    } else {
+      dateHelpText.textContent = '매년 반복할 날짜를 선택하세요 (생일, 기념일 등).';
+      scheduleDateInput.removeAttribute('min');
+    }
   }
 }
 
-// 알림 추가 폼 제출
+// 알림 추가
 async function handleNotificationSubmit(event) {
   event.preventDefault();
 
@@ -409,6 +380,8 @@ async function handleNotificationSubmit(event) {
   }
 
   let scheduleDays = null;
+  let scheduleDate = null;
+
   if (scheduleType === 'weekly') {
     const checkedDays = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
     .map(cb => cb.value);
@@ -421,9 +394,29 @@ async function handleNotificationSubmit(event) {
     scheduleDays = checkedDays.join(',');
   } else if (scheduleType === 'weather') {
     const weatherCondition = document.getElementById('weather-condition').value;
-    scheduleDays = weatherCondition; // 날씨 조건을 schedule_days에 저장
-  }
+    scheduleDays = weatherCondition;
+  } else if (scheduleType === 'date_once' || scheduleType === 'date_yearly') {
+    const selectedDate = document.getElementById('schedule-date').value;
 
+    if (!selectedDate) {
+      showAlert('warning', '⚠️ 날짜를 선택해주세요.');
+      return;
+    }
+
+    if (scheduleType === 'date_once') {
+      const today = new Date();
+      const targetDate = new Date(selectedDate);
+      today.setHours(0, 0, 0, 0);
+      targetDate.setHours(0, 0, 0, 0);
+
+      if (targetDate < today) {
+        showAlert('warning', '⚠️ 일회성 알림은 과거 날짜를 선택할 수 없습니다.');
+        return;
+      }
+    }
+
+    scheduleDate = selectedDate;
+  }
   try {
     showAlert('info', '⏳ 알림을 추가하는 중...');
 
@@ -435,7 +428,8 @@ async function handleNotificationSubmit(event) {
         message,
         schedule_type: scheduleType,
         schedule_time: scheduleTime,
-        schedule_days: scheduleDays
+        schedule_days: scheduleDays,
+        schedule_date: scheduleDate
       })
     });
 
@@ -446,35 +440,28 @@ async function handleNotificationSubmit(event) {
       notificationForm.reset();
       weeklyDaysContainer.style.display = 'none';
       weatherConditionContainer.style.display = 'none';
+      datePickerContainer.style.display = 'none';
       await loadNotifications();
       await updateSchedulerStatus();
     } else {
       showAlert('danger', '❌ 알림 추가에 실패했습니다: ' + data.error);
     }
   } catch (error) {
-    console.error('알림 추가 실패:', error);
     showAlert('danger', '❌ 서버 오류로 알림을 추가할 수 없습니다.');
   }
 }
 
-// 알림 목록 불러오기
+// 알림 목록 관련
 async function loadNotifications() {
   try {
     const response = await fetch('/api/notifications');
     const notifications = await response.json();
-
     renderNotificationsList(notifications);
   } catch (error) {
-    console.error('알림 목록 불러오기 실패:', error);
-    notificationsList.innerHTML = `
-            <div class="alert alert-danger">
-                ❌ 알림 목록을 불러올 수 없습니다.
-            </div>
-        `;
+    notificationsList.innerHTML = `<div class="alert alert-danger">❌ 알림 목록을 불러올 수 없습니다.</div>`;
   }
 }
 
-// 알림 목록 렌더링
 function renderNotificationsList(notifications) {
   if (notifications.length === 0) {
     notificationsList.innerHTML = `
@@ -493,11 +480,13 @@ function renderNotificationsList(notifications) {
                     <div class="flex-grow-1">
                         <h6 class="card-title">
                             ${notification.is_active ? '🔔' : '🔕'} ${notification.title}
+                            ${getScheduleIcon(notification.schedule_type)}
                         </h6>
                         ${notification.message ? `<p class="card-text text-muted small">${notification.message}</p>` : ''}
                         <div class="small text-muted">
                             <i class="bi bi-clock"></i> ${notification.schedule_time} 
                             <span class="badge bg-secondary ms-2">${getScheduleText(notification)}</span>
+                            ${getNextOccurrence(notification)}
                         </div>
                     </div>
                     <div class="btn-group btn-group-sm">
@@ -520,6 +509,17 @@ function renderNotificationsList(notifications) {
   notificationsList.innerHTML = html;
 }
 
+function getScheduleIcon(scheduleType) {
+  switch (scheduleType) {
+    case 'daily': return '📅';
+    case 'weekly': return '🗓️';
+    case 'weather': return '🌤️';
+    case 'date_once': return '📌';
+    case 'date_yearly': return '🎂';
+    default: return '⏰';
+  }
+}
+
 // 스케줄 텍스트 생성
 function getScheduleText(notification) {
   switch (notification.schedule_type) {
@@ -538,12 +538,82 @@ function getScheduleText(notification) {
         'humid': '습할 때'
       };
       return conditions[condition] || '날씨 조건';
+    case 'date_once':
+      // 🔧 수정된 부분
+      if (notification.schedule_date) {
+        return `${formatDate(notification.schedule_date)} (1회)`;
+      } else {
+        return '날짜 미설정 (1회)';
+      }
+    case 'date_yearly':
+      // 🔧 수정된 부분
+      if (notification.schedule_date) {
+        const [year, month, day] = notification.schedule_date.split('-');
+        return `매년 ${month}월 ${day}일`;
+      } else {
+        return '날짜 미설정 (연간)';
+      }
     default:
       return '사용자 정의';
   }
 }
 
-// 알림 활성화/비활성화 토글
+function getNextOccurrence(notification) {
+  if (notification.schedule_type === 'date_once') {
+    const targetDate = new Date(notification.schedule_date);
+    const today = new Date();
+    const diffTime = targetDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays > 0) {
+      return `<br><small class="text-primary">📍 ${diffDays}일 후</small>`;
+    } else if (diffDays === 0) {
+      return `<br><small class="text-warning">📍 오늘</small>`;
+    } else {
+      return `<br><small class="text-muted">📍 완료됨</small>`;
+    }
+  } else if (notification.schedule_type === 'date_yearly') {
+    const [, month, day] = notification.schedule_date.split('-');
+    const currentYear = new Date().getFullYear();
+    const thisYear = new Date(currentYear, month - 1, day);
+    const nextYear = new Date(currentYear + 1, month - 1, day);
+    const today = new Date();
+
+    const targetDate = thisYear >= today ? thisYear : nextYear;
+    const diffTime = targetDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) {
+      return `<br><small class="text-warning">🎉 오늘!</small>`;
+    } else {
+      return `<br><small class="text-info">🎂 ${diffDays}일 후</small>`;
+    }
+  }
+  return '';
+}
+
+// 날짜 포맷팅
+function formatDate(dateString) {
+  if (!dateString) {
+    return '날짜 없음';
+  }
+
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return '잘못된 날짜';
+    }
+
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${year}년 ${month}월 ${day}일`;
+  } catch (error) {
+    console.error('날짜 포맷팅 오류:', error);
+    return '날짜 오류';
+  }
+}
+
 async function toggleNotification(id) {
   try {
     const response = await fetch(`/api/notifications/${id}/toggle`, {
@@ -560,12 +630,10 @@ async function toggleNotification(id) {
       showAlert('danger', '❌ 상태 변경에 실패했습니다.');
     }
   } catch (error) {
-    console.error('알림 토글 실패:', error);
     showAlert('danger', '❌ 서버 오류가 발생했습니다.');
   }
 }
 
-// 알림 삭제
 async function deleteNotification(id) {
   if (!confirm('정말로 이 알림을 삭제하시겠습니까?')) {
     return;
@@ -586,12 +654,10 @@ async function deleteNotification(id) {
       showAlert('danger', '❌ 삭제에 실패했습니다.');
     }
   } catch (error) {
-    console.error('알림 삭제 실패:', error);
     showAlert('danger', '❌ 서버 오류가 발생했습니다.');
   }
 }
 
-// 스케줄러 상태 업데이트
 async function updateSchedulerStatus() {
   try {
     const response = await fetch('/api/scheduler/status');
@@ -601,18 +667,15 @@ async function updateSchedulerStatus() {
     statusElement.textContent = `활성 작업: ${status.active_tasks}개`;
     statusElement.className = status.active_tasks > 0 ? 'badge bg-success ms-2' : 'badge bg-secondary ms-2';
   } catch (error) {
-    console.error('스케줄러 상태 조회 실패:', error);
     document.getElementById('scheduler-status').textContent = '상태 불명';
   }
 }
 
-// 알림 메시지 표시
 function showAlert(type, message) {
   statusAlert.className = `alert alert-${type}`;
   statusAlert.innerHTML = message;
   statusAlert.style.display = 'block';
 
-  // 자동으로 숨기기
   if (type === 'success' || type === 'info') {
     setTimeout(() => {
       statusAlert.style.display = 'none';
@@ -620,6 +683,6 @@ function showAlert(type, message) {
   }
 }
 
-// 전역 함수로 노출 (HTML onclick에서 사용)
+// 전역 함수로 노출
 window.toggleNotification = toggleNotification;
 window.deleteNotification = deleteNotification;
