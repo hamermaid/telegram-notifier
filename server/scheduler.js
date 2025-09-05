@@ -2,6 +2,7 @@
 import cron from 'node-cron';
 import { db } from './database.js';
 import { sendMessage } from './telegram.js';
+import { getRandomFortune, formatFortuneMessage } from './fortune.js';
 
 // 활성화된 cron 작업들을 저장
 let activeTasks = new Map();
@@ -152,6 +153,11 @@ function buildCronExpression(notification) {
         console.log(`🎂 연간 반복 스케줄: ${minute} ${hour} ${yearlyDay} ${yearlyMonth} * (매년 ${yearlyMonth}월 ${yearlyDay}일)`);
         return `${minute} ${hour} ${yearlyDay} ${yearlyMonth} *`;
 
+      case 'fortune':
+        // 운세 알림 - 매일 지정된 시간에 랜덤 운세 전송
+        console.log(`🔮 운세 스케줄: ${minute} ${hour} * * *`);
+        return `${minute} ${hour} * * *`;
+
       case 'custom':
         // 사용자 정의 (현재는 매일과 동일)
         console.log(`📅 커스텀 스케줄: ${minute} ${hour} * * *`);
@@ -199,9 +205,24 @@ async function executeNotification(notification) {
     console.log(`🔔 알림 실행: "${notification.title}"`);
 
     // 메시지 구성
-    let message = `🔔 ${notification.title}`;
-    if (notification.message) {
-      message += `\n\n${notification.message}`;
+    let message;
+    
+    // 운세 알림인 경우 랜덤 운세 가져오기
+    if (notification.schedule_type === 'fortune') {
+      try {
+        const fortune = await getRandomFortune();
+        message = formatFortuneMessage(fortune);
+        console.log(`🔮 운세 메시지 생성 완료: ID ${fortune.id}`);
+      } catch (error) {
+        console.error('❌ 운세 가져오기 실패:', error.message);
+        message = `🔮 **오늘의 운세**\n\n💫 오늘은 새로운 시작의 날입니다! 긍정적인 마음으로 하루를 보내세요.\n\n🍀 **행운의 아이템**: 행운의 열쇠\n🎨 **행운의 색상**: 파란색\n\n✨ 오늘 하루도 행운이 함께하길 바랍니다!`;
+      }
+    } else {
+      // 일반 메시지 구성
+      message = `🔔 ${notification.title}`;
+      if (notification.message) {
+        message += `\n\n${notification.message}`;
+      }
     }
 
     // 날짜 기반 알림 정보 추가

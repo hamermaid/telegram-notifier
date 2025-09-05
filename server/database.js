@@ -70,6 +70,18 @@ export async function initDatabase() {
           )
       `);
 
+      // 하루 운세 테이블
+      db.run(`
+          CREATE TABLE IF NOT EXISTS daily_fortunes (
+                                                       id INTEGER PRIMARY KEY,
+                                                       message TEXT NOT NULL,
+                                                       lucky_item VARCHAR(255) NOT NULL,
+                                                      lucky_color_name VARCHAR(50) NOT NULL,
+                                                      lucky_color_code VARCHAR(7) NOT NULL,
+                                                      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          )
+      `);
+
       // 기본 날씨 설정 행 삽입 (없을 때만)
       db.run(`
           INSERT OR IGNORE INTO weather_settings (id, api_key, city) 

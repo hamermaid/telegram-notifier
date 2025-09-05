@@ -514,6 +514,7 @@ function getScheduleIcon(scheduleType) {
     case 'daily': return '📅';
     case 'weekly': return '🗓️';
     case 'weather': return '🌤️';
+    case 'fortune': return '🔮';
     case 'date_once': return '📌';
     case 'date_yearly': return '🎂';
     default: return '⏰';
@@ -538,6 +539,8 @@ function getScheduleText(notification) {
         'humid': '습할 때'
       };
       return conditions[condition] || '날씨 조건';
+    case 'fortune':
+      return '매일 운세';
     case 'date_once':
       // 🔧 수정된 부분
       if (notification.schedule_date) {
