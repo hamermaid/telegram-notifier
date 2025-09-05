@@ -1,0 +1,19 @@
+{
+  "name": "telegram-notifier-server",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6",
+    "node-cron": "^3.0.3",
+    "node-telegram-bot-api": "^0.64.0",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

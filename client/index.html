@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>텔레알림</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+<div id="app">
+  <div class="container mt-4">
+    <h1 class="mb-4">🤖 텔레알림</h1>
+
+    <!-- 상태 표시 -->
+    <div id="status-alert" class="alert" style="display: none;"></div>
+
+    <!-- 텔레그램 설정 카드 -->
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">📱 텔레그램 봇 설정</h5>
+        <button class="btn btn-sm btn-outline-secondary" id="toggle-telegram-btn">
+          <i class="bi bi-chevron-down"></i>
+        </button>
+      </div>
+      <div class="card-body" id="telegram-card-body" style="display: none;">
+        <div id="telegram-status" class="mb-3"></div>
+
+        <form id="telegram-form">
+          <div class="mb-3">
+            <label for="bot-token" class="form-label">봇 토큰</label>
+            <input type="text" class="form-control" id="bot-token"
+                   placeholder="예: 123456789:ABCdefGHIjklMNOpqrsTUVwxyz">
+          </div>
+
+          <div class="mb-3">
+            <label for="chat-id" class="form-label">채팅 ID</label>
+            <input type="text" class="form-control" id="chat-id"
+                   placeholder="예: 123456789">
+          </div>
+
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <button type="submit" class="btn btn-primary me-md-2">
+              💾 설정 저장
+            </button>
+            <button type="button" class="btn btn-success" id="test-btn" disabled>
+              📤 테스트 메시지 전송
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 날씨 설정 카드 -->
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">🌤️ 날씨 연동 설정</h5>
+        <button class="btn btn-sm btn-outline-secondary" id="toggle-weather-btn">
+          <i class="bi bi-chevron-down"></i>
+        </button>
+      </div>
+      <div class="card-body" id="weather-card-body" style="display: none;">
+        <div id="weather-status" class="mb-3"></div>
+
+        <form id="weather-form">
+          <div class="mb-3">
+            <label for="weather-api-key" class="form-label">OpenWeatherMap API 키</label>
+            <input type="text" class="form-control" id="weather-api-key"
+                   placeholder="예: abc123def456...">
+            <div class="form-text">
+              <strong>API 키 받는 방법:</strong><br>
+              1. <a href="https://openweathermap.org/api" target="_blank">OpenWeatherMap</a> 접속<br>
+              2. 무료 회원가입 후 로그인<br>
+              3. API Keys 메뉴에서 키 복사<br>
+              4. 무료 플랜으로 충분합니다!
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="weather-city" class="form-label">도시</label>
+            <input type="text" class="form-control" id="weather-city"
+                   placeholder="Seoul" value="Seoul">
+            <div class="form-text">
+              영문 도시명 입력 (예: Seoul, Busan, Incheon)
+            </div>
+          </div>
+
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <button type="submit" class="btn btn-primary me-md-2">
+              💾 날씨 설정 저장
+            </button>
+            <button type="button" class="btn btn-success" id="weather-test-btn" disabled>
+              🌤️ 날씨 테스트
+            </button>
+          </div>
+        </form>
+
+        <!-- 현재 날씨 표시 -->
+        <div id="current-weather" style="display: none;" class="mt-4">
+          <h6>📍 현재 날씨</h6>
+          <div id="weather-info"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 알림 추가 카드 -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">⏰ 새 알림 추가</h5>
+      </div>
+      <div class="card-body">
+        <form id="notification-form">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="notification-title" class="form-label">알림 제목 *</label>
+              <input type="text" class="form-control" id="notification-title"
+                     placeholder="예: 운동 시간, 물 마시기" required>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label for="notification-time" class="form-label">시간 *</label>
+              <input type="time" class="form-control" id="notification-time" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="notification-message" class="form-label">메시지 (선택)</label>
+            <textarea class="form-control" id="notification-message" rows="2"
+                      placeholder="예: 스트레칭하고 물 한 잔 마셔요!"></textarea>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="schedule-type" class="form-label">반복 설정 *</label>
+              <select class="form-select" id="schedule-type" required>
+                <option value="">선택하세요</option>
+                <option value="daily">매일</option>
+                <option value="weekly">주간 선택</option>
+                <option value="weather">날씨 기반</option>
+              </select>
+            </div>
+
+            <div class="col-md-6" id="weekly-days-container" style="display: none;">
+              <label class="form-label">요일 선택</label>
+              <div class="d-flex gap-2 flex-wrap">
+                <input type="checkbox" class="btn-check" id="day-1" value="1">
+                <label class="btn btn-outline-primary btn-sm" for="day-1">월</label>
+
+                <input type="checkbox" class="btn-check" id="day-2" value="2">
+                <label class="btn btn-outline-primary btn-sm" for="day-2">화</label>
+
+                <input type="checkbox" class="btn-check" id="day-3" value="3">
+                <label class="btn btn-outline-primary btn-sm" for="day-3">수</label>
+
+                <input type="checkbox" class="btn-check" id="day-4" value="4">
+                <label class="btn btn-outline-primary btn-sm" for="day-4">목</label>
+
+                <input type="checkbox" class="btn-check" id="day-5" value="5">
+                <label class="btn btn-outline-primary btn-sm" for="day-5">금</label>
+
+                <input type="checkbox" class="btn-check" id="day-6" value="6">
+                <label class="btn btn-outline-primary btn-sm" for="day-6">토</label>
+
+                <input type="checkbox" class="btn-check" id="day-0" value="0">
+                <label class="btn btn-outline-primary btn-sm" for="day-0">일</label>
+              </div>
+            </div>
+
+            <div class="col-md-6" id="weather-condition-container" style="display: none;">
+              <label class="form-label">날씨 조건</label>
+              <select class="form-select" id="weather-condition">
+                <option value="rain">비 올 확률 30% 이상</option>
+                <option value="cold">기온 10°C 이하</option>
+                <option value="hot">기온 25°C 이상</option>
+                <option value="humid">습도 80% 이상</option>
+              </select>
+              <div class="form-text">
+                설정한 날씨 조건이 만족될 때 알림을 보냅니다.
+              </div>
+            </div>
+          </div>
+
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-plus-circle"></i> 알림 추가
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 알림 목록 카드 -->
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">📋 알림 목록</h5>
+        <div>
+          <button class="btn btn-sm btn-outline-info" id="refresh-notifications">
+            <i class="bi bi-arrow-clockwise"></i> 새로고침
+          </button>
+          <span class="badge bg-secondary ms-2" id="scheduler-status">로딩중...</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="notifications-list">
+          <div class="text-center text-muted">
+            <div class="spinner-border spinner-border-sm" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">알림 목록을 불러오는 중...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
